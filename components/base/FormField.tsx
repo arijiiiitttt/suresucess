@@ -30,7 +30,7 @@ const FormField = ({ control, name, label, placeholder, type = "text" }: FormFie
               type={type}
               {...field}
             />
-          </FormControl>
+          </FormControl>  
           <FormMessage />
         </FormItem>
       )}
