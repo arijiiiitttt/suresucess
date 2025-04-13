@@ -11,6 +11,9 @@ import Link from "next/link";
 import { toast } from "sonner";
 import FormField from "@/components/base/FormField";
 import { useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebase/client";
+
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -21,7 +24,8 @@ const authFormSchema = (type: FormType) => {
 };
 
 const AuthForm = ({ type }: { type: FormType }) => {
-const router = useRouter();
+  const router = useRouter();
+  const isSignIn = type === "sign-in";
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -33,31 +37,66 @@ const router = useRouter();
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (type === "sign-up") {
-        toast.success("Welcome to SureSuccess! Account created successfully.", values);
-        router.push('/sign-in');
+        const { name, email, password } = values;
+        const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+        const result = await signUp({
+          uid: userCredentials.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
+
+        toast.success("Welcome to SureSuccess! Account created successfully.");
+        router.push("/sign-in");
       } else {
-        toast.success("Sign In successful. Welcome back!", values);
-        router.push('/');
+        const { email, password } = values;
+        const userCredentials = await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await userCredentials.user.getIdToken();
+
+        if (!idToken) {
+          toast.error("Failed to sign in. Please try again.");
+          return;
+        }
+
+        await signIn({
+          email,
+          idToken,
+        });
+
+        toast.success("Sign In successful. Welcome back!");
+        router.push("/");
       }
     } catch (error) {
-      console.log(error);
-      toast.error(`Oops! Something went wrong: ${error}`);
+      console.error(error);
+      toast.error("Oops! Something went wrong. Please try again.");
     }
   }
 
-  const isSignIn = type === "sign-in";
-
   return (
-    <>
-      <div className="border h-auto w-full max-w-[400px] flex flex-col justify-between border-gray-300 rounded-lg bg-white shadow-lg overflow-auto transition-shadow duration-300 ease-in-out hover:shadow-2xl mx-auto p-4 sm:p-6 md:p-8">
-        <div className="flex flex-col gap-6 items-center">
-          <div className="flex flex-col items-center gap-y-2 justify-center">
-            <Image src="./logoo.svg" alt="logo" height={46} width={46} />
-            <h3 className="text-lg md:text-xl font-semibold text-gray-800">SureSuccess</h3>
+    <div className="relative w-full max-w-[400px] mx-auto px-4">
+      {/* Main white card */}
+      <div className="relative w-full bg-white rounded-xl border-2 border-black p-6">
+        {/* Yellow background div - smaller than white card */}
+        <div className="absolute -top-1 -right-2 -z-10 w-[calc(100%-4px)] h-[calc(100%-4px)] bg-yellow-400 rounded-xl border-2 border-black" />
+        
+        <div className="flex flex-col gap-6 items-center mb-6">
+          <div className="relative">
+            {/* Logo container */}
+            <div className="relative bg-white rounded-full border-2 border-black p-2">
+              <Image src="/logoo.svg" alt="logo" height={36} width={36} className="relative z-10" />
+            </div>
           </div>
+          <h3 className="text-xl font-bold text-gray-900">
+            {isSignIn ? "Welcome Back!" : "Create Account"}
+          </h3>
         </div>
 
         <Form {...form}>
@@ -83,18 +122,22 @@ const router = useRouter();
               placeholder="Your Password"
             />
 
-            <Button
-              type="submit"
-              className="w-full px-4 py-3 text-sm md:text-base font-medium text-white bg-violet-400 border border-transparent rounded-md shadow-md hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              {isSignIn ? "Sign In" : "Create Account"}
-            </Button>
+            <div className="relative mt-6">
+              {/* Button with yellow background */}
+              <Button
+                type="submit"
+                className="relative w-full bg-white hover:bg-gray-50 text-black font-medium px-6 py-2.5 rounded-lg transition-all duration-200 border-2 border-black"
+              >
+                <div className="absolute -top-2 -left-2 -z-10 w-[calc(100%-4px)] h-[calc(100%-4px)] bg-yellow-400 rounded-lg border-2 border-black" />
+                {isSignIn ? "Sign In" : "Create Account"}
+              </Button>
+            </div>
 
-            <p className="text-center text-gray-600 text-sm pt-4">
+            <p className="text-center text-gray-600 text-sm pt-6">
               {isSignIn ? "No account yet? " : "Already have an account? "}
               <Link
                 href={!isSignIn ? "/sign-in" : "/sign-up"}
-                className="font-semibold text-indigo-600 hover:underline"
+                className="font-semibold text-black hover:text-gray-700 underline-offset-4 hover:underline"
               >
                 {!isSignIn ? "Sign In" : "Sign Up"}
               </Link>
@@ -102,7 +145,7 @@ const router = useRouter();
           </form>
         </Form>
       </div>
-    </>
+    </div>
   );
 };
 
