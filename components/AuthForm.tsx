@@ -13,6 +13,7 @@ import FormField from "@/components/base/FormField";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/firebase/client";
+import { signUp ,signIn} from "@/lib/actions/auth.action";
 
 
 const authFormSchema = (type: FormType) => {
@@ -58,8 +59,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
         router.push("/sign-in");
       } else {
         const { email, password } = values;
-        const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-        const idToken = await userCredentials.user.getIdToken();
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await userCredential.user.getIdToken();
 
         if (!idToken) {
           toast.error("Failed to sign in. Please try again.");
@@ -69,7 +70,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
         await signIn({
           email,
           idToken,
-        });
+        })
 
         toast.success("Sign In successful. Welcome back!");
         router.push("/");
@@ -85,7 +86,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
       {/* Main white card */}
       <div className="relative w-full bg-white rounded-xl border-2 border-black p-6">
         {/* Yellow background div - smaller than white card */}
-        <div className="absolute -top-1 -right-2 -z-10 w-[calc(100%-4px)] h-[calc(100%-4px)] bg-yellow-400 rounded-xl border-2 border-black" />
+        <div className="absolute -bottom-2 -right-2 -z-10 w-[calc(100%-4px)] h-[calc(100%-4px)] bg-yellow-400 rounded-xl border-2 border-black" />
         
         <div className="flex flex-col gap-6 items-center mb-6">
           <div className="relative">
@@ -126,7 +127,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               {/* Button with yellow background */}
               <Button
                 type="submit"
-                className="relative w-full bg-white hover:bg-gray-50 text-black font-medium px-6 py-2.5 rounded-lg transition-all duration-200 border-2 border-black"
+                className="relative w-full bg-white hover:bg-yellow-400  text-black font-medium px-6 py-2.5 rounded-lg transition-all duration-200 border-2 border-black"
               >
                 <div className="absolute -top-2 -left-2 -z-10 w-[calc(100%-4px)] h-[calc(100%-4px)] bg-yellow-400 rounded-lg border-2 border-black" />
                 {isSignIn ? "Sign In" : "Create Account"}
@@ -137,7 +138,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               {isSignIn ? "No account yet? " : "Already have an account? "}
               <Link
                 href={!isSignIn ? "/sign-in" : "/sign-up"}
-                className="font-semibold text-black hover:text-gray-700 underline-offset-4 hover:underline"
+                className="font-semibold text-black hover:text-gray-700 underline-offset-4 hover:text-bolder"
               >
                 {!isSignIn ? "Sign In" : "Sign Up"}
               </Link>

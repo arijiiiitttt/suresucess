@@ -1,13 +1,17 @@
-"use client";
+
+
+import { isAuthenticated } from "@/lib/actions/auth.action";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
 
 
-const RootLayout = ({ children }: { children: ReactNode }) => {
-  
+const RootLayout = async ({ children }: { children: ReactNode }) => {
+  const isUserAuthenticated = await isAuthenticated();
 
+  if (!isUserAuthenticated) redirect('/sign-in');
   return (
     <div className="root-layout">
       <nav className="w-full py-4 fixed top-0 left-0 z-10 bg-white border-b border-gray-100">
@@ -27,6 +31,10 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
       </nav>
 
       <div className="pt-[72px]">{children}</div>
+      <div>
+
+
+      </div>
     </div>
   );
 };
