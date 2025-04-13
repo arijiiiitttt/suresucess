@@ -32,7 +32,8 @@ const InterviewCard = ({ interviewId, userId, role, type, techstack, createdAt }
                   height={60} 
                   className="rounded-full object-cover size-[60px] border-2 border-gray-100"
                 />
-                <div className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                {/* Type Badge - Shows on hover */}
+                <div className="absolute -top-1 -right-1 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 border-2 border-black">
                   {normalizedType}
                 </div>
               </div>
