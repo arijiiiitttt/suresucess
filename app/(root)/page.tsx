@@ -1,16 +1,34 @@
-"use client";
+
 
 import InterviewCard from '@/components/InterviewCard';
 import { Button } from '@/components/ui/button';
-import { dummyInterviews } from '@/constants';
+import { get } from 'http';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import { FaRobot, FaArrowRight } from 'react-icons/fa';
 import { FcGraduationCap } from "react-icons/fc";
 import { FcAssistant } from "react-icons/fc";
+import { getCurrentUser, getInterviewsByUserId } from '@/lib/actions/auth.action';
 
-const page = () => {
+
+
+const page = async () => {
+
+
+  const user = await getCurrentUser();
+
+  const [userInterviews, latestInterviews] = await Promise.all([
+    getInterviewsByUserId(user?.id!),
+    getInterviewsByUserId({ userId: user?.id! }),
+  ])
+
+
+
+  const hasPastInterviews = userInterviews?.length > 0;
+
+  const hasUpcomingInterviews = latestInterviews?.length > 0;
+
   return (
     <div className="min-h-[70vh] flex flex-col justify-center">
       <section className="container mx-auto px-4 sm:px-6 py-6">
@@ -80,9 +98,17 @@ const page = () => {
         </div>
 
         <div className="interviews-section">
-          {dummyInterviews.map((interview, index) => (
-            <InterviewCard key={interview.id} {...interview} />
-          ))}
+          {
+            hasPastInterviews ? (
+              userInterviews?.map((interview) => (
+                <InterviewCard key={interview.id} {...interview} />
+              ))
+            ) : (
+              <div className="text-center text-gray-500">
+                No interviews found. Start practicing now!
+              </div>
+            )}
+
         </div>
       </section>
 
@@ -104,9 +130,16 @@ const page = () => {
         </div>
 
         <div className="interviews-section">
-          {dummyInterviews.map((interview, index) => (
-            <InterviewCard key={interview.id} {...interview} />
-          ))}
+          {
+            hasUpcomingInterviews ? (
+              latestInterviews?.map((interview) => (
+                <InterviewCard  {...interview} key={interview.id}/>
+              ))
+            ) : (
+              <div className="text-center text-gray-500">
+                There are no new interviews available at the moment. Please check back later!
+              </div>
+            )}
         </div>
       </section>
     </div>

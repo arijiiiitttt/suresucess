@@ -1,7 +1,9 @@
 import Agent from '@/components/Agent'
+import { getCurrentUser } from '@/lib/actions/auth.action'
 import React from 'react'
 
-const page = () => {
+const page = async () => {
+  const user = await getCurrentUser();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-4xl mx-auto">
@@ -9,7 +11,7 @@ const page = () => {
           Interview Page
         </h3>
         <div className="relative">
-          <Agent userName="You" userId="user1" type="generate"/>
+          <Agent userName={user?.name} userId={user?.id} type="generate"/>
         </div>
       </div>
     </div>

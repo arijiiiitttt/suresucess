@@ -35,7 +35,7 @@ const Agent = ({
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [lastMessage, setLastMessage] = useState<string>("");
+  const [latestMessage, setLastMessage] = useState<string>("");
   const [profileImage, setProfileImage] = useState<string>("/user-avatar.png");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -329,13 +329,13 @@ const Agent = ({
                   <div className="absolute inset-0 translate-x-2 translate-y-2 bg-yellow-400 rounded-lg border-2 border-black" />
                   <div className="relative bg-white rounded-lg border border-black p-4">
                     <p
-                      key={lastMessage}
+                      key={latestMessage}
                       className={cn(
                         "text-sm sm:text-base text-gray-700 transition-opacity duration-500 text-center tracking-tight",
                         "animate-fadeIn opacity-100"
                       )}
                     >
-                      {lastMessage}
+                      {latestMessage}
                     </p>
                   </div>
                 </div>
