@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { Button } from "./ui/button";
-import { FaCamera } from "react-icons/fa";
+import { FaCamera, FaTrash, FaEdit } from "react-icons/fa";
 import { SlSettings } from "react-icons/sl";
 // import { interviewer } from "@/constants";
 // import { createFeedback } from "@/lib/actions/general.action";
@@ -39,6 +39,11 @@ const Agent = ({
   const [profileImage, setProfileImage] = useState<string>("/user-avatar.png");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load saved profile image on component mount
   useEffect(() => {
@@ -191,6 +196,34 @@ const Agent = ({
     vapi.stop();
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setShowContextMenu(true);
+  };
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+      setShowContextMenu(false);
+    }
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      setShowDropdown(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  const handleDeleteImage = () => {
+    setProfileImage("/user-avatar.png");
+    localStorage.removeItem('profileImage');
+    setShowDropdown(false);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="relative w-full max-w-2xl mx-auto">
@@ -228,7 +261,8 @@ const Agent = ({
                       alt="Editable Profile Image"
                       width={120}
                       height={120}
-                      className="rounded-full object-cover size-[120px] sm:size-[140px] md:size-[164px] border-2 border-gray-100"
+                      className="rounded-full object-cover size-[120px] sm:size-[140px] md:size-[164px] border-2 border-gray-100 cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
                     />
                     {/* Upload Overlay */}
                     <div 
@@ -240,21 +274,41 @@ const Agent = ({
                     {/* Upload Indicator */}
                     {isUploading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12  border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 border-white border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
                   </div>
-                  {/* Plus Icon Button - Attached to circle */}
-                  <button
-                    onClick={() => {
-                      fileInputRef.current?.click();
-                      const button = document.querySelector('.plus-icon');
-                      button?.classList.toggle('rotate-180');
-                    }}
-                    className="absolute -bottom-2 -right-2 group bg-white hover:bg-gray-50 text-black font-medium p-2.5 sm:p-3.5 md:p-4.5 rounded-full transition-all duration-200 border-2 border-black"
-                  >
-                    <SlSettings className="plus-icon text-[1.8em] sm:text-[1.8em] md:text-[1.8em] transition-transform duration-300" />
-                  </button>
+                  {/* Settings Button with Dropdown */}
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="absolute -bottom-2 -right-2 group bg-white hover:bg-gray-50 text-black font-medium p-2.5 sm:p-3.5 md:p-4.5 rounded-full transition-all duration-200 border-2 border-black"
+                    >
+                      <SlSettings className="plus-icon text-[1.8em] sm:text-[1.8em] md:text-[1.8em] transition-transform duration-300" />
+                    </button>
+                    {/* Dropdown Menu */}
+                    {showDropdown && (
+                      <div className="absolute -right-2 top-0 translate-x-full ml-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                        <button
+                          onClick={() => {
+                            fileInputRef.current?.click();
+                            setShowDropdown(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <FaEdit className="text-sm" />
+                          Edit Image
+                        </button>
+                        <button
+                          onClick={handleDeleteImage}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <FaTrash className="text-sm" />
+                          Delete Image
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <input
                   type="file"

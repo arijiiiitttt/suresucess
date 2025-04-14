@@ -16,7 +16,7 @@ const page = () => {
       <section className="container mx-auto px-4 sm:px-6 py-6">
         <div className="relative w-full max-w-4xl mx-auto">
           {/* Yellow background div - positioned behind */}
-          <div className="absolute inset-0 translate-x-2 translate-y-2 bg-yellow-400 rounded-2xl border-2 border-black" />
+          <div className="absolute inset-0 translate-x-1 translate-y-1 bg-yellow-400 rounded-2xl border-2 border-black" />
 
           {/* White card - positioned above */}
           <div className="relative w-full bg-white rounded-2xl border border-black p-4 sm:p-5 md:p-6">
